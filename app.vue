@@ -1,23 +1,10 @@
 <script setup lang="ts">
-const { data: todos, refresh } = useAsyncData ("todos", () => {
-  return $fetch("/api/todo");
-});
 const input = ref("");
+const { todos, addTodo, updateTodo, deleteTodo } = useTodos();
 
-const addTodo = async () => {
-  if (!input) return;
-  await $fetch("/api/todo", { method: "post", body: { item: input.value } });
-  refresh();
-};
-
-const updateTodo = async (id) => {
-  await $fetch(`/api/todo/${id}`, { method: "put" });
-  refresh();
-};
-
-const deleteTodo = async (id) => {
-  await $fetch(`/api/todo/${id}`, { method: "delete" });
-  refresh();
+const handleAdd = () => {
+  addTodo(input.value);
+  input.value = "";
 };
 </script>
 
@@ -29,20 +16,18 @@ const deleteTodo = async (id) => {
         <input
           placeholder="Add a new todo..."
           v-model="input"
-          @keyup.enter="addTodo"
+          @keyup.enter="handleAdd"
         />
-        <NButton @click="addTodo">Add</NButton>
+        <NButton @click="handleAdd">Add</NButton>
       </div>
       <NCard
-        @click="updateTodo(todo.id)"
+        @click="() => updateTodo(todo.id)"
         class="card"
         v-for="todo in todos"
-        :key="todo.is"
+        :key="todo.id"
       >
-        <h4 :class="todo.completed ? 'complete' : null">
-          {{ todo.item }}
-        </h4>
-        <p @click="deleteTodo(todo.id)">X</p>
+        <h4 :class="todo.completed ? 'complete' : null">{{ todo.item }}</h4>
+        <p @click="() => deleteTodo(todo.id)">x</p>
       </NCard>
     </NCard>
   </div>
@@ -54,20 +39,16 @@ const deleteTodo = async (id) => {
   margin: 0 auto;
   max-width: 50%;
 }
-
 .cards {
-  padding: 2 rem;
+  padding: 2rem;
 }
-
 input {
   outline: none;
 }
-
 .add-todo {
   display: flex;
   justify-content: space-between;
 }
-
 .card {
   padding: 0.5rem;
   margin-top: 1rem;
@@ -75,7 +56,6 @@ input {
   display: flex;
   justify-content: space-between;
 }
-
 .complete {
   text-decoration: line-through;
 }
